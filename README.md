@@ -1,6 +1,6 @@
 # Pulsetic MCP Server
 
-Connect AI assistants to your Pulsetic monitoring platform using the [Model Context Protocol](https://modelcontextprotocol.io) (MCP).
+Connect AI assistants to your [Pulsetic](https://pulsetic.com/) monitoring platform using the [Model Context Protocol](https://modelcontextprotocol.io) (MCP).
 
 ---
 
