@@ -1,6 +1,6 @@
 # Pulsetic MCP Server
 
-Connect AI assistants to your [Pulsetic](https://pulsetic.com/) monitoring platform using the [Model Context Protocol](https://modelcontextprotocol.io) (MCP).
+Connect AI assistants to your Pulsetic monitoring platform using the [Model Context Protocol](https://modelcontextprotocol.io) (MCP).
 
 ---
 
@@ -10,10 +10,11 @@ The Model Context Protocol is an open standard that allows AI assistants to inte
 
 **Supported clients:**
 
-- **Claude Desktop** — Anthropic's desktop app
-- **Claude Code** — Anthropic's CLI for developers
-- **Cursor** — AI-powered code editor
-- **Windsurf** — AI-powered IDE
+- [**Claude Desktop**](#claude-desktop) — Anthropic's desktop app
+- [**Claude Code**](#claude-code) — Anthropic's CLI for developers
+- [**ChatGPT**](#chatgpt) — OpenAI's AI assistant (via OAuth)
+- [**Cursor**](#cursor) — AI-powered code editor
+- [**Windsurf**](#cursor) — AI-powered IDE
 - Any client implementing the [MCP specification](https://modelcontextprotocol.io/specification/2025-03-26)
 
 ---
@@ -30,17 +31,18 @@ The Model Context Protocol is an open standard that allows AI assistants to inte
 
 ### Claude Desktop
 
-Open **Settings → Developer → Edit Config** and add:
+Claude Desktop uses stdio-based MCP servers. Use `mcp-remote` to bridge the remote HTTP endpoint. Open **Settings → Developer → Edit Config** and add:
 
 ```json
 {
   "mcpServers": {
     "pulsetic": {
-      "type": "streamableHttp",
-      "url": "https://api.pulsetic.com/mcp",
-      "headers": {
-        "Authorization": "YOUR_API_KEY"
-      }
+      "command": "npx",
+      "args": [
+        "-y", "mcp-remote",
+        "https://api.pulsetic.com/mcp",
+        "--header", "Authorization: Bearer YOUR_API_KEY"
+      ]
     }
   }
 }
@@ -73,6 +75,37 @@ Open **Settings → MCP Servers → Add Server** and configure:
 - **Type:** streamableHttp
 - **URL:** `https://api.pulsetic.com/mcp`
 - **Headers:** `Authorization: YOUR_API_KEY`
+
+### ChatGPT
+
+ChatGPT has native MCP support through **Developer Mode**. It uses OAuth to authenticate with Pulsetic.
+
+**Step 1.** Enable Developer Mode in ChatGPT: go to **Enabled apps → Advanced settings → Developer mode** and toggle it on. This is available for ChatGPT Pro, Plus, Team, Business, Enterprise, and Edu users.
+
+**Step 2.** Create a new app: go to **Enabled apps → Create app**.
+
+**Step 3.** Fill in the app details:
+
+| Field | Value |
+|-------|-------|
+| Name | `Pulsetic MCP` (or any name you prefer) |
+| Description | `Uptime monitoring` (optional) |
+| MCP Server URL | `https://api.pulsetic.com/mcp` |
+| Authentication | **OAuth** |
+
+**Step 4.** The OAuth endpoints will be auto-discovered from the server. You can verify them under **Advanced settings**:
+
+| Field | Value |
+|-------|-------|
+| Auth URL | `https://api.pulsetic.com/mcp/oauth/authorize` |
+| Token URL | `https://api.pulsetic.com/mcp/oauth/token` |
+| Registration URL | `https://api.pulsetic.com/mcp/oauth/register` |
+
+**Step 5.** Check **"I understand and want to continue"** and click **Create**.
+
+**Step 6.** Complete the OAuth login flow. You will be redirected to a Pulsetic authorization page where you enter your account email and API token.
+
+> **Email must match your API token.** On the authorization page, the email you enter must match the owner of the API token you provide.
 
 > **Keep your API key private.** Your API key has full access to your Pulsetic account. Never commit it to version control or share it publicly.
 
@@ -425,8 +458,14 @@ Deletes a scheduled maintenance window.
 ### 401 Unauthorized
 
 - Verify your API key is correct and hasn't expired.
-- Make sure you're passing the key in the `Authorization` header directly (no `Bearer` prefix).
+- Make sure you're passing the key in the `Authorization` header (either as a raw token or with `Bearer` prefix).
 - Confirm your account is on a plan with API access enabled.
+
+### OAuth authorization fails (ChatGPT)
+
+- On the authorization page, the **email** you enter must match the owner of the API token.
+- Make sure Developer Mode is enabled in your ChatGPT settings.
+- Ensure you have a ChatGPT plan that supports Developer Mode (Pro, Plus, Team, Business, Enterprise, or Edu).
 
 ### "Monitor not found or access denied"
 
